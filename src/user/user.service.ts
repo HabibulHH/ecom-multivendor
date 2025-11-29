@@ -42,4 +42,7 @@ export class UserService {
     const { password, ...userWithoutPassword } = savedUser;
     return userWithoutPassword;
   }
+  async findAllUsers(): Promise<User[]> {
+    return this.userRepository.find();
+  }
 }
