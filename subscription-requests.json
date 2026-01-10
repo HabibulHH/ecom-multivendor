@@ -1,0 +1,95 @@
+{
+  "basicSubscription": {
+    "name": "Basic Monthly Plan",
+    "description": "Basic subscription with essential features for small businesses",
+    "price": 9.99,
+    "currency": "USD",
+    "plan": "BASIC",
+    "status": "ACTIVE",
+    "autoRenew": true
+  },
+  "standardSubscription": {
+    "name": "Standard Monthly Plan",
+    "description": "Standard subscription with advanced features for growing businesses",
+    "price": 19.99,
+    "currency": "USD",
+    "plan": "STANDARD",
+    "status": "ACTIVE",
+    "autoRenew": true
+  },
+  "premiumSubscription": {
+    "name": "Premium Monthly Plan",
+    "description": "Premium subscription with all features for enterprise businesses",
+    "price": 49.99,
+    "currency": "USD",
+    "plan": "PREMIUM",
+    "status": "ACTIVE",
+    "autoRenew": true
+  },
+  "basicYearlySubscription": {
+    "name": "Basic Yearly Plan",
+    "description": "Basic yearly subscription with 2 months free",
+    "price": 99.99,
+    "currency": "USD",
+    "plan": "BASIC",
+    "status": "ACTIVE",
+    "autoRenew": true
+  },
+  "standardYearlySubscription": {
+    "name": "Standard Yearly Plan",
+    "description": "Standard yearly subscription with 2 months free",
+    "price": 199.99,
+    "currency": "USD",
+    "plan": "STANDARD",
+    "status": "ACTIVE",
+    "autoRenew": true
+  },
+  "premiumYearlySubscription": {
+    "name": "Premium Yearly Plan",
+    "description": "Premium yearly subscription with 2 months free",
+    "price": 499.99,
+    "currency": "USD",
+    "plan": "PREMIUM",
+    "status": "ACTIVE",
+    "autoRenew": true
+  },
+  "suspendedSubscription": {
+    "name": "Trial Plan",
+    "description": "Trial subscription for testing purposes",
+    "price": 0,
+    "currency": "USD",
+    "plan": "BASIC",
+    "status": "SUSPENDED",
+    "autoRenew": false
+  },
+  "expiredSubscription": {
+    "name": "Expired Legacy Plan",
+    "description": "Legacy subscription that has expired",
+    "price": 5.99,
+    "currency": "USD",
+    "plan": "BASIC",
+    "status": "EXPIRED",
+    "autoRenew": false
+  },
+  "customCurrency": {
+    "name": "EU Basic Plan",
+    "description": "Basic subscription for European customers",
+    "price": 8.99,
+    "currency": "EUR",
+    "plan": "BASIC",
+    "status": "ACTIVE",
+    "autoRenew": true
+  },
+  "updateRequest": {
+    "price": 12.99,
+    "description": "Updated subscription with enhanced features"
+  },
+  "updateStatusRequest": {
+    "status": "CANCELLED"
+  },
+  "updatePlanRequest": {
+    "plan": "PREMIUM",
+    "price": 49.99,
+    "description": "Upgraded to premium plan"
+  }
+}

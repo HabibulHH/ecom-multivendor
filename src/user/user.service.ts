@@ -42,7 +42,9 @@ export class UserService {
     const { password, ...userWithoutPassword } = savedUser;
     return userWithoutPassword;
   }
-  async findAllUsers(): Promise<User[]> {
-    return this.userRepository.find();
+  async findAllUsers(): Promise<Omit<User, 'password'>[]> {
+    const users = await this.userRepository.find();
+    // Remove password field from each user object
+    return users.map(({ password, ...userWithoutPassword }) => userWithoutPassword);
   }
 }
