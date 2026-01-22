@@ -47,4 +47,17 @@ export class UserService {
     // Remove password field from each user object
     return users.map(({ password, ...userWithoutPassword }) => userWithoutPassword);
   }
+
+  async findById(id: string): Promise<Omit<User, 'password'> | null> {
+    const user = await this.userRepository.findOne({
+      where: { id },
+    });
+
+    if (!user) {
+      return null;
+    }
+
+    const { password, ...userWithoutPassword } = user;
+    return userWithoutPassword;
+  }
 }
