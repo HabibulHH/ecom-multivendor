@@ -7,6 +7,7 @@ import { UserModule } from './user/user.module';
 import { User } from './user/entities/user.entity';
 import { SubscriptionModule } from './subscription/subscription.module';
 import { UserSubscriptionModule } from './user-subscription/user-subscription.module';
+import { StoreModule } from './store/store.module';
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { UserSubscriptionModule } from './user-subscription/user-subscription.mo
     UserModule,
     SubscriptionModule,
     UserSubscriptionModule,
+    StoreModule,
   ],
   controllers: [AppController],
   providers: [AppService],
