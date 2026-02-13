@@ -12,48 +12,15 @@ echo "  Product Module API Tests"
 echo "============================================"
 echo ""
 
-# ─── SETUP: Create Vendor User ───
-echo ">>> [SETUP] Creating vendor user..."
-VENDOR_RESPONSE=$(curl -s -w "\n%{http_code}" -X POST "$BASE_URL/users" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "email": "testvendor@product-test.com",
-    "password": "password123",
-    "firstName": "Test",
-    "lastName": "Vendor",
-    "role": "VENDOR"
-  }')
-VENDOR_HTTP_CODE=$(echo "$VENDOR_RESPONSE" | tail -1)
-VENDOR_BODY=$(echo "$VENDOR_RESPONSE" | sed '$d')
-VENDOR_ID=$(echo "$VENDOR_BODY" | grep -o '"id":"[^"]*"' | head -1 | cut -d'"' -f4)
-echo "Status: $VENDOR_HTTP_CODE"
-echo "Vendor ID: $VENDOR_ID"
-echo ""
-
-# ─── SETUP: Create Store for Vendor ───
-echo ">>> [SETUP] Creating store for vendor..."
-STORE_RESPONSE=$(curl -s -w "\n%{http_code}" -X POST "$BASE_URL/stores" \
-  -H "Content-Type: application/json" \
-  -d "{
-    \"userId\": \"$VENDOR_ID\",
-    \"name\": \"Test Product Store\",
-    \"description\": \"A store for testing product APIs\",
-    \"contactEmail\": \"store@product-test.com\"
-  }")
-STORE_HTTP_CODE=$(echo "$STORE_RESPONSE" | tail -1)
-STORE_BODY=$(echo "$STORE_RESPONSE" | sed '$d')
-STORE_ID=$(echo "$STORE_BODY" | grep -o '"id":"[^"]*"' | head -1 | cut -d'"' -f4)
-STORE_SLUG=$(echo "$STORE_BODY" | grep -o '"slug":"[^"]*"' | head -1 | cut -d'"' -f4)
-echo "Status: $STORE_HTTP_CODE"
-echo "Store ID: $STORE_ID"
-echo "Store Slug: $STORE_SLUG"
-echo ""
-
-# ─── SETUP: Approve Store (Admin) ───
-echo ">>> [SETUP] Approving store (admin)..."
-APPROVE_RESPONSE=$(curl -s -w "\n%{http_code}" -X PATCH "$BASE_URL/admin/stores/$STORE_ID/approve")
-APPROVE_HTTP_CODE=$(echo "$APPROVE_RESPONSE" | tail -1)
-echo "Status: $APPROVE_HTTP_CODE"
+# ─── SETUP: Hardcoded IDs ───
+VENDOR_ID="76223b36-2082-4457-9293-ccd95cc8326b"
+STORE_ID="68edf973-9218-41c9-9156-37201b24635b"
+STORE_SLUG="test-product-store"
+TIMESTAMP=$(date +%s)
+echo "Using hardcoded IDs:"
+echo "  Vendor ID: $VENDOR_ID"
+echo "  Store ID:  $STORE_ID"
+echo "  Store Slug: $STORE_SLUG"
 echo ""
 
 echo "============================================"
@@ -66,13 +33,27 @@ echo ">>> 1. POST /admin/categories - Create category"
 CAT1_RESPONSE=$(curl -s -w "\n%{http_code}" -X POST "$BASE_URL/admin/categories" \
   -H "Content-Type: application/json" \
   -d '{
-    "name": "Electronics",
+    "name": "Electronics 101",
     "description": "Electronic gadgets and devices"
   }')
 CAT1_HTTP_CODE=$(echo "$CAT1_RESPONSE" | tail -1)
 CAT1_BODY=$(echo "$CAT1_RESPONSE" | sed '$d')
 CATEGORY_ID=$(echo "$CAT1_BODY" | grep -o '"id":"[^"]*"' | head -1 | cut -d'"' -f4)
 CATEGORY_SLUG=$(echo "$CAT1_BODY" | grep -o '"slug":"[^"]*"' | head -1 | cut -d'"' -f4)
+# If 409 conflict, fetch existing category from list
+if [ "$CAT1_HTTP_CODE" = "409" ] || [ -z "$CATEGORY_ID" ]; then
+  echo "Category already exists, fetching from list..."
+  CAT_LIST=$(curl -s "$BASE_URL/categories")
+  CATEGORY_ID=$(echo "$CAT_LIST" | grep -o '"id":"[^"]*","name":"Electronics[^"]*"' | head -1 | grep -o '"id":"[^"]*"' | cut -d'"' -f4)
+  if [ -z "$CATEGORY_ID" ]; then
+    CATEGORY_ID=$(echo "$CAT_LIST" | grep -o '"slug":"electronics"' -B5 | grep -o '"id":"[^"]*"' | cut -d'"' -f4)
+  fi
+  # Fallback: extract ID of category with slug electronics
+  if [ -z "$CATEGORY_ID" ]; then
+    CATEGORY_ID=$(echo "$CAT_LIST" | sed 's/},{/}\n{/g' | grep '"slug":"electronics"' | grep -o '"id":"[^"]*"' | cut -d'"' -f4)
+  fi
+  CATEGORY_SLUG="electronics"
+fi
 echo "Status: $CAT1_HTTP_CODE"
 echo "Category ID: $CATEGORY_ID"
 echo "Response: $CAT1_BODY"
@@ -89,6 +70,12 @@ CAT2_RESPONSE=$(curl -s -w "\n%{http_code}" -X POST "$BASE_URL/admin/categories"
 CAT2_HTTP_CODE=$(echo "$CAT2_RESPONSE" | tail -1)
 CAT2_BODY=$(echo "$CAT2_RESPONSE" | sed '$d')
 CATEGORY2_ID=$(echo "$CAT2_BODY" | grep -o '"id":"[^"]*"' | head -1 | cut -d'"' -f4)
+# If 409 conflict, fetch existing category from list
+if [ "$CAT2_HTTP_CODE" = "409" ] || [ -z "$CATEGORY2_ID" ]; then
+  echo "Category already exists, fetching from list..."
+  CAT_LIST=$(curl -s "$BASE_URL/categories")
+  CATEGORY2_ID=$(echo "$CAT_LIST" | sed 's/},{/}\n{/g' | grep '"slug":"clothing"' | grep -o '"id":"[^"]*"' | cut -d'"' -f4)
+fi
 echo "Status: $CAT2_HTTP_CODE"
 echo "Category 2 ID: $CATEGORY2_ID"
 echo ""
@@ -123,7 +110,7 @@ PRODUCT_RESPONSE=$(curl -s -w "\n%{http_code}" -X POST "$BASE_URL/stores/my-stor
     \"description\": \"Premium noise-cancelling wireless headphones\",
     \"price\": 99.99,
     \"compareAtPrice\": 149.99,
-    \"sku\": \"WH-001\",
+    \"sku\": \"WH-$TIMESTAMP\",
     \"quantity\": 50,
     \"categoryIds\": [\"$CATEGORY_ID\"]
   }")
@@ -144,7 +131,7 @@ PRODUCT2_RESPONSE=$(curl -s -w "\n%{http_code}" -X POST "$BASE_URL/stores/my-sto
     \"name\": \"USB-C Cable\",
     \"description\": \"Fast charging USB-C cable 2m\",
     \"price\": 12.50,
-    \"sku\": \"USB-C-002\",
+    \"sku\": \"USB-$TIMESTAMP\",
     \"quantity\": 200,
     \"categoryIds\": [\"$CATEGORY_ID\", \"$CATEGORY2_ID\"]
   }")
@@ -157,7 +144,7 @@ echo ""
 
 # ─── 7. List Own Products ───
 echo ">>> 7. GET /stores/my-store/products - List own products"
-curl -s -w "\nStatus: %{http_code}\n" "$BASE_URL/stores/my-store/products" \
+curl -s -w "\nStatus: %{http_code}\n" -X GET "$BASE_URL/stores/my-store/products" \
   -H "Content-Type: application/json" \
   -d "{\"userId\": \"$VENDOR_ID\"}"
 echo ""
